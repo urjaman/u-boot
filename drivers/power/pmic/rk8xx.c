@@ -87,6 +87,40 @@ static int rk8xx_probe(struct udevice *dev)
 	return 0;
 }
 
+#if CONFIG_IS_ENABLED(CMD_POWEROFF)
+/* NOTE: Should only enable this function if the rockchip,system-power-manager
+ * property is in the device tree node, but it is there in every board that has
+ * an rk8xx in u-boot currently, so this is left as an excercise for later.
+ */
+
+int do_poweroff(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+{
+	struct udevice *dev;
+	struct rk8xx_priv *priv;
+	u8 bits;
+
+	/* "Hey, what would one name a pmic in the device tree..." */
+	if (pmic_get("pmic", &dev) != 0) {
+		printf("pmic not found\n");
+		return 1;
+	}
+	priv = dev_get_priv(dev);
+
+	if (priv->variant == RK818_ID)
+		bits = DEV_OFF;
+	else
+		bits = DEV_OFF_RST;
+
+	if (pmic_clrsetbits(dev, REG_DEVCTRL, 0, bits) != 0) {
+		printf("pmic_clrsetbits failed\n");
+		return 1;
+	}
+
+	printf("Poweroff apparently failed.\n");
+	return 0;
+}
+#endif
+
 static struct dm_pmic_ops rk8xx_ops = {
 	.reg_count = rk8xx_reg_count,
 	.read = rk8xx_read,
