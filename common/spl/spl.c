@@ -273,9 +273,17 @@ int spl_parse_image_header(struct spl_image_info *spl_image,
 
 		spl_image->os = image_get_os(header);
 		spl_image->name = image_get_name(header);
+#ifdef DEBUG
+		{
+		char name[32];
+		memcpy(name, spl_image->name, 31);
+		name[31] = 0;
 		debug(SPL_TPL_PROMPT
-		      "payload image: %32s load addr: 0x%lx size: %d\n",
-		      spl_image->name, spl_image->load_addr, spl_image->size);
+		      "payload image: %s load addr: 0x%lx size: %d\n",
+		      name, spl_image->load_addr, spl_image->size);
+		}
+#endif
+
 #else
 		/* LEGACY image not supported */
 		debug("Legacy boot image support not enabled, proceeding to other boot methods\n");
