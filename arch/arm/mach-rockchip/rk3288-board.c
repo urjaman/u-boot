@@ -320,7 +320,6 @@ U_BOOT_CMD(
 int board_early_init_f(void)
 {
 	const uintptr_t GRF_SOC_CON0 = 0xff770244;
-	const uintptr_t GRF_SOC_CON2 = 0xff77024c;
 	struct udevice *dev;
 	int ret;
 
@@ -334,8 +333,6 @@ int board_early_init_f(void)
 		debug("CLK init failed: %d\n", ret);
 		return ret;
 	}
-
-	rk_setreg(GRF_SOC_CON2, 1 << 0);
 
 	/*
 	 * Disable JTAG on sdmmc0 IO. The SDMMC won't work until this bit is
