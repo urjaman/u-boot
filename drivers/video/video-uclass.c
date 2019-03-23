@@ -128,7 +128,7 @@ void video_set_default_colors(struct udevice *dev, bool invert)
 
 	if (CONFIG_IS_ENABLED(SYS_WHITE_ON_BLACK)) {
 		/* White is used when switching to bold, use light gray here */
-		fore = VID_LIGHT_GRAY;
+		fore = VID_GREEN;
 		back = VID_BLACK;
 	} else {
 		fore = VID_BLACK;
