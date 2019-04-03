@@ -13,6 +13,10 @@
 
 #include <configs/rk3288_common.h>
 
+#ifdef CONFIG_ENV_IS_IN_SPI_FLASH
+#define CONFIG_ENV_SECT_SIZE (4 * 1024)
+#endif
+
 #define CONFIG_KEYBOARD
 
 #endif
