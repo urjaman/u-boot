@@ -6,6 +6,9 @@
 
 #include <common.h>
 #include <dm.h>
+#include <sysreset.h>
+#include <dm/device.h>
+#include <dm/lists.h>
 #include <errno.h>
 #include <log.h>
 #include <power/rk8xx_pmic.h>
@@ -57,9 +60,9 @@ static int rk8xx_read(struct udevice *dev, uint reg, uint8_t *buff, int len)
 	return 0;
 }
 
-#if CONFIG_IS_ENABLED(PMIC_CHILDREN)
 static int rk8xx_bind(struct udevice *dev)
 {
+#if CONFIG_IS_ENABLED(PMIC_CHILDREN)
 	ofnode regulators_node;
 	int children;
 
@@ -76,10 +79,15 @@ static int rk8xx_bind(struct udevice *dev)
 	if (!children)
 		debug("%s: %s - no child found\n", __func__, dev->name);
 
+#endif
+
+	if (CONFIG_IS_ENABLED(SYSRESET))
+		return device_bind_driver(dev, "rk8xx-sysreset",
+					  "rk8xx-sysreset", NULL);
+
 	/* Always return success for this device */
 	return 0;
 }
-#endif
 
 static int rk8xx_probe(struct udevice *dev)
 {
@@ -187,10 +195,56 @@ U_BOOT_DRIVER(pmic_rk8xx) = {
 	.name = "rk8xx pmic",
 	.id = UCLASS_PMIC,
 	.of_match = rk8xx_ids,
-#if CONFIG_IS_ENABLED(PMIC_CHILDREN)
 	.bind = rk8xx_bind,
-#endif
 	.priv_auto_alloc_size   = sizeof(struct rk8xx_priv),
 	.probe = rk8xx_probe,
 	.ops = &rk8xx_ops,
 };
+
+#if IS_ENABLED(CONFIG_SYSRESET)
+/* NOTE: Should only enable this function if the rockchip,system-power-manager
+ * property is in the device tree node, but it is there in every board that has
+ * an rk8xx in u-boot currently, so this is left as an excercise for later.
+ */
+static int rk8xx_sysreset_request(struct udevice *dev, enum sysreset_t type)
+{
+	struct udevice *pmic_dev;
+	struct rk8xx_priv *priv;
+	int ret;
+	u8 bits;
+
+	if (type != SYSRESET_POWER_OFF)
+		return -EPROTONOSUPPORT;
+
+	ret = uclass_get_device_by_driver(UCLASS_PMIC,
+					  DM_GET_DRIVER(pmic_rk8xx),
+					  &pmic_dev);
+
+	if (ret)
+		return -EOPNOTSUPP;
+
+	priv = dev_get_priv(pmic_dev);
+
+	if (priv->variant == RK818_ID)
+		bits = DEV_OFF;
+	else
+		bits = DEV_OFF_RST;
+
+	ret = pmic_clrsetbits(pmic_dev, REG_DEVCTRL, 0, bits);
+
+	if (ret < 0)
+		return ret;
+
+	return -EINPROGRESS;
+}
+
+static struct sysreset_ops rk8xx_sysreset_ops = {
+	.request = rk8xx_sysreset_request,
+};
+
+U_BOOT_DRIVER(rk8xx_sysreset) = {
+	.name = "rk8xx-sysreset",
+	.id = UCLASS_SYSRESET,
+	.ops = &rk8xx_sysreset_ops,
+};
+#endif

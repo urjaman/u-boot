@@ -6,6 +6,7 @@
 
 #ifndef _PMIC_RK8XX_H_
 #define _PMIC_RK8XX_H_
+#include <linux/bitops.h>
 
 enum {
 	REG_SECONDS			= 0x00,
@@ -219,6 +220,11 @@ struct reg_data {
 	u8 val;
 	u8 mask;
 };
+
+/* DEVCTRL bits for poweroff */
+#define DEV_OFF_RST	BIT(3)
+#define DEV_OFF		BIT(0)
+
 struct rk8xx_reg_table {
 	char *name;
 	u8 reg_ctl;
