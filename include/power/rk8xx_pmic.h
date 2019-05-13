@@ -177,6 +177,10 @@ enum {
 
 #define RK8XX_ID_MSK	0xfff0
 
+/* DEVCTRL bits for poweroff */
+#define DEV_OFF_RST	BIT(3)
+#define DEV_OFF		BIT(0)
+
 struct rk8xx_reg_table {
 	char *name;
 	u8 reg_ctl;
