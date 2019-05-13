@@ -221,7 +221,7 @@ static int stpmic1_sysreset_request(struct udevice *dev, enum sysreset_t type)
 	struct udevice *pmic_dev;
 	int ret;
 
-	if (type != SYSRESET_POWER)
+	if (type != SYSRESET_POWER_OFF)
 		return -EPROTONOSUPPORT;
 
 	ret = uclass_get_device_by_driver(UCLASS_PMIC,
