@@ -147,7 +147,7 @@ void board_init_f(ulong dummy)
 	}
 #endif
 
-#if !defined(CONFIG_SUPPORT_TPL)
+#if !defined(CONFIG_TPL)
 	debug("\nspl:init dram\n");
 	ret = uclass_get_device(UCLASS_RAM, 0, &dev);
 	if (ret) {
