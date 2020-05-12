@@ -99,6 +99,11 @@ __weak const char *board_spl_was_booted_from(void)
 void board_boot_order(u32 *spl_boot_list)
 {
 	const void *blob = gd->fdt_blob;
+	/* TODO?: if no fdt blob, fallback to spl_boot_device() for now */
+	if (!blob) {
+		spl_boot_list[0] = spl_boot_device();
+		return;
+	}
 	int chosen_node = fdt_path_offset(blob, "/chosen");
 	int idx = 0;
 	int elem;
